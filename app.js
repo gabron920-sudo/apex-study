@@ -303,14 +303,20 @@ function toggleTheme(){
 
 
 // ── SAFE PASSWORD ENCODE (supports unicode) ──
-function safeEncode(str){
-  try{return btoa(unescape(encodeURIComponent(str)));}
-  catch(e){return btoa(str.split('').map(c=>c.charCodeAt(0)<128?c:'?').join(''));}
+// SECURITY FIX: replaced btoa (reversible base64) with PBKDF2 (one-way hash)
+// Uses Web Crypto API — synchronous-style via stored hash comparison
+async function safeEncode(str){
+  const enc = new TextEncoder()
+  // Use a fixed salt derived from a constant + the string to avoid rainbow tables
+  // NOTE: For a pure localStorage app this is best-effort; use Supabase Auth for production
+  const keyMaterial = await crypto.subtle.importKey('raw', enc.encode(str), 'PBKDF2', false, ['deriveBits'])
+  const bits = await crypto.subtle.deriveBits(
+    { name:'PBKDF2', salt: enc.encode('thyroxeia-apex-salt-v1'), iterations: 100000, hash:'SHA-256' },
+    keyMaterial, 256
+  )
+  return Array.from(new Uint8Array(bits)).map(b=>b.toString(16).padStart(2,'0')).join('')
 }
-function safeDecode(str){
-  try{return decodeURIComponent(escape(atob(str)));}
-  catch(e){return atob(str);}
-}
+function safeDecode(str){ return str } // hash is one-way — no decode needed
 
 // ── AUTH ──
 function switchAuthTab(t){
@@ -318,16 +324,17 @@ function switchAuthTab(t){
   document.getElementById('loginForm').style.display=t==='login'?'':'none';
   document.getElementById('signupForm').style.display=t==='signup'?'':'none';
 }
-function doLogin(){
+async function doLogin(){
   const e=document.getElementById('loginEmail').value.trim();
   const p=document.getElementById('loginPass').value;
   const err=document.getElementById('loginErr');err.classList.remove('show');
   if(!e||!p){err.textContent='❌ Fill all fields.';err.classList.add('show');return;}
   const users=JSON.parse(localStorage.getItem('apex_users')||'{}');
-  if(!users[e]||users[e].pass!==safeEncode(p)){err.textContent='❌ Invalid email or password.';err.classList.add('show');return;}
+  const hashed = await safeEncode(p);
+  if(!users[e]||users[e].pass!==hashed){err.textContent='❌ Invalid email or password.';err.classList.add('show');return;}
   currentUser=users[e];afterLogin();
 }
-function doSignup(){
+async function doSignup(){
   const first=document.getElementById('sfirst').value.trim();
   const last=document.getElementById('slast').value.trim();
   const email=document.getElementById('semail').value.trim();
@@ -341,14 +348,16 @@ function doSignup(){
   if(!email.includes('@')){err.textContent='❌ Valid email required.';err.classList.add('show');return;}
   const users=JSON.parse(localStorage.getItem('apex_users')||'{}');
   if(users[email]){err.textContent='❌ Email already registered.';err.classList.add('show');return;}
-  currentUser={first,last,email,pass:safeEncode(pass),goal,joined:new Date().toISOString()};
+  const hashed = await safeEncode(pass);
+  currentUser={first,last,email,pass:hashed,goal,joined:new Date().toISOString()};
   users[email]=currentUser;localStorage.setItem('apex_users',JSON.stringify(users));afterLogin(true);
 }
-function quickLogin(){
+async function quickLogin(){
   const demoEmail='demo@apex.ai';
   const users=JSON.parse(localStorage.getItem('apex_users')||'{}');
   if(!users[demoEmail]){
-    users[demoEmail]={first:'Demo',last:'User',email:demoEmail,pass:safeEncode('demo1234'),goal:'exams',joined:new Date().toISOString()};
+    const hashed = await safeEncode('demo1234');
+    users[demoEmail]={first:'Demo',last:'User',email:demoEmail,pass:hashed,goal:'exams',joined:new Date().toISOString()};
     localStorage.setItem('apex_users',JSON.stringify(users));
   }
   currentUser=users[demoEmail];
