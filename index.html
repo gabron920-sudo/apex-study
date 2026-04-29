@@ -683,9 +683,10 @@
     <h2 style="font-family:'Space Grotesk',sans-serif;font-size:1.5rem;font-weight:700;margin-bottom:8px" id="upgradeTitle">Upgrade Your Plan</h2>
     <p style="color:var(--muted);font-size:.85rem;line-height:1.7;margin-bottom:22px" id="upgradeMsg">Unlock this feature and everything else.</p>
     <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:18px">
-      <button class="price-cta" id="upgradeStudentBtn" style="background:linear-gradient(135deg,#0891b2,var(--cyan));color:#fff;margin-bottom:6px" onclick="showToast('💳 Payment coming soon — stay tuned!');closeUpgrade()">📖 Get Student — $2/mo</button>
-      <button class="price-cta pro" id="upgradeProBtn" onclick="showToast('💳 Payment coming soon — stay tuned!');closeUpgrade()">⚡ Get Pro — $4/mo</button>
-      <button class="price-cta elite" id="upgradeEliteBtn" onclick="showToast('🔥 Payment coming soon — stay tuned!');closeUpgrade()">🔥 Go Elite — $7/mo</button>
+      <button class="price-cta" id="upgradeFreeBtn" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;margin-bottom:6px" onclick="startPayment('free')">🆓 Get Free — ₱1,425/mo</button>
+      <button class="price-cta" id="upgradeStudentBtn" style="background:linear-gradient(135deg,#0891b2,var(--cyan));color:#fff;margin-bottom:6px" onclick="startPayment('student')">📖 Get Student — ₱3,420/mo</button>
+      <button class="price-cta pro" id="upgradeProBtn" onclick="startPayment('pro')">⚡ Get Pro — ₱8,550/mo</button>
+      <button class="price-cta elite" id="upgradeEliteBtn" onclick="startPayment('elite')">🔥 Go Elite — ₱17,100/mo</button>
     </div>
     <button class="btn btn-secondary btn-full" onclick="closeUpgrade()" style="font-size:.82rem">Maybe Later</button>
     <p style="font-size:.72rem;color:var(--muted2);margin-top:12px">Cancel anytime. No hidden fees.</p>
@@ -702,7 +703,7 @@
       <div style="font-size:.75rem;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">What you unlock:</div>
       <div style="font-size:.83rem;display:flex;flex-direction:column;gap:7px" id="paywallPerks"></div>
     </div>
-    <button class="price-cta pro" style="margin-bottom:10px" onclick="showToast('💳 Payment coming soon!');closePaywall()">⚡ Upgrade to Pro — $4/mo</button>
+    <button class="price-cta pro" style="margin-bottom:10px" onclick="startPayment('pro');closePaywall()">⚡ Upgrade to Pro — ₱8,550/mo</button>
     <button class="btn btn-secondary btn-full" onclick="closePaywall()" style="font-size:.82rem">Stay on Free</button>
   </div>
 </div>
